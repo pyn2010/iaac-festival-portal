@@ -1,0 +1,30 @@
+# IAAC Festival Portal
+
+Production-ready static JavaScript + Supabase portal for the 4th Parul University International Folklore Festival (`festival.iaac.in`).
+
+## Features
+
+- Two separate portal entry points: `/admin` for Admin sign-in and `/group` for Group sign-in/account creation.
+- Public sign-up exists only on `/group`, is for groups only, and requires one valid pre-created Group ID.
+- Initial 20 production Group IDs are seeded in `supabase/migrations/202608120001_group_account_model.sql`; `supabase/migrations/202608120002_portal_entrypoints_test_group.sql` reserves `PUIFF26-TEST01` as an organiser test Group ID that follows the same Group workflow but is clearly marked as non-production.
+- Group IDs can be claimed once, remain separate from group name/country, and are permanently associated to the account that claimed them.
+- Admins can review all groups, submissions, official documents, Group ID status, replacement history, and CSV exports.
+- Groups can manage only their own submission/profile and view official/group-scoped documents allowed by Supabase RLS.
+- Supabase password reset is available from the sign-in screen.
+- Responsive dark festival UI with profile dropdown, settings, sign out, and visible fetch error handling.
+
+## Setup
+
+1. Apply `supabase/migrations/202608080001_portal_schema.sql` to your Supabase project if it is not already applied.
+2. Apply `supabase/migrations/202608120001_group_account_model.sql` to add the final Admin/Group account model, claimable Group IDs, replacement history, and group-scoped RLS policies.
+3. Apply `supabase/migrations/202608120002_portal_entrypoints_test_group.sql` to add the reserved organiser test Group ID.
+4. In Vercel, keep the existing `SUPABASE_URL` and `SUPABASE_ANON_KEY` environment variables for Production and Preview. `npm run build` writes those browser-safe values into `src/config.js` at build time.
+5. Run `npm run dev` to serve locally, or deploy the static files to `festival.iaac.in`.
+
+## Local Development
+
+The committed `src/config.js` placeholder keeps local static serving simple. For local testing, either run `SUPABASE_URL=... SUPABASE_ANON_KEY=... npm run build` before `npm run dev`, or set `SUPABASE_URL` and `SUPABASE_ANON_KEY` in browser `localStorage`.
+
+## Security Notes
+
+Client route guards are backed by database RLS. Group accounts can only select and upsert their own group-scoped `applications` row, while admins can review all applications, manage Group IDs, and manage official event documents. Only the Supabase browser publishable key should be supplied as `SUPABASE_ANON_KEY`; never use a service-role key in this static frontend.
